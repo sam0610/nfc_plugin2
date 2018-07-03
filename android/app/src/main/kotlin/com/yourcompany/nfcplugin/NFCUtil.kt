@@ -19,7 +19,7 @@ object NFCUtil {
 
     fun createNFCMessage(payload: String, intent: Intent?): Boolean {
 
-        val pathPrefix = "peterjohnwelcome.com:nfcapp"
+        val pathPrefix = "sam0610.com"
         val nfcRecord = NdefRecord(NdefRecord.TNF_EXTERNAL_TYPE, pathPrefix.toByteArray(), ByteArray(0), payload.toByteArray())
         val nfcMessage = NdefMessage(arrayOf(nfcRecord))
         intent?.let {
@@ -66,6 +66,7 @@ object NFCUtil {
         val msg = NdefMessage(arrayOf(record))
         return arrayOf(msg)
     }
+
 
     fun disableNFCInForeground(nfcAdapter: NfcAdapter, activity: Activity) {
         nfcAdapter.disableForegroundDispatch(activity)

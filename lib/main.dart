@@ -43,20 +43,6 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  Future<Null> _getBatteryLevel() async {
-    String batteryLevel;
-    try {
-      final String result = await platform.invokeMethod('getBatteryLevel');
-      batteryLevel = result;
-    } on PlatformException catch (e) {
-      batteryLevel = "Failed to get battery level: '${e.message}'.";
-    }
-
-    setState(() {
-      _batteryLevel = batteryLevel;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Material(
@@ -64,11 +50,13 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            RaisedButton(
-              child: Text('Get Battery Level'),
-              onPressed: _getBatteryLevel,
-            ),
-            Text(_batteryLevel),
+            Text(
+              _batteryLevel,
+              style: new TextStyle(
+                  fontSize: 48.0,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue),
+            )
           ],
         ),
       ),
