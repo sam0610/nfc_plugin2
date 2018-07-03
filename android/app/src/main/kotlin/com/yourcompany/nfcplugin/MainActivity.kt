@@ -59,7 +59,7 @@ class MainActivity(): FlutterActivity() {
         super.onNewIntent(intent)
 //        val messageWrittenSuccessfully = NFCUtil.createNFCMessage(message.toString(), intent)
         message = NFCUtil.retrieveNFCMessage(intent)
-        channel!!.invokeMethod("getBatteryLevel",message)
+        channel!!.invokeMethod("getNFC",message)
     }
 
 

@@ -1,7 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
-import 'dart:async';
 
 void main() => runApp(new MyApp());
 
@@ -27,6 +27,21 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   static const platform = const MethodChannel('sam0610.nixon.io/nfc');
   String _batteryLevel = 'unknow text';
+
+  @override
+  void initState() {
+    super.initState();
+    platform.setMethodCallHandler(myUtilsHandler);
+  }
+
+  Future<dynamic> myUtilsHandler(MethodCall methodCall) async {
+    if (methodCall.method == "getNFC") {
+      String msg = methodCall.arguments;
+      setState(() {
+        _batteryLevel = msg;
+      });
+    }
+  }
 
   Future<Null> _getBatteryLevel() async {
     String batteryLevel;
