@@ -1,7 +1,6 @@
 package com.yourcompany.nfcplugin
 
 import android.content.Intent
-import android.nfc.NdefMessage
 import android.nfc.NfcAdapter
 import android.os.Bundle
 import io.flutter.app.FlutterActivity
@@ -57,41 +56,25 @@ class MainActivity(): FlutterActivity() {
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
+
         if(intent!=null){
-        if(writemode){
             var message = ""
-            try{
-                if(NFCUtil.createNFCMessage2(msgToWrite, intent)) message="done"
-            }catch(e:Exception){
-                message= e.message.toString()
+            if(writemode){
+                try{
+                    if(NFCUtil.createNFCMessage(msgToWrite,intent))message="done"
+                }
+                catch(e:Exception){
+                    message= e.message.toString()
+                }
+                writemode=false
+                channel!!.invokeMethod("wroteNfc",message)
             }
-            writemode=false
-            channel!!.invokeMethod("wroteNfc",message)
-        } else{
-            var message = receiveMessageFromDevice(intent)
-            channel!!.invokeMethod("gotNfc",message)
-
-
-        }  
-        //var message = NFCUtil.retrieveNFCMessage(intent)
-        }
-    }
-
-    private fun receiveMessageFromDevice(intent: Intent):String {
-        val action = intent.action
-        if (NfcAdapter.ACTION_NDEF_DISCOVERED == action || true) {
-            val parcelables = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)
-            with(parcelables) {
-                val inNdefMessage = this[0] as NdefMessage
-                val inNdefRecords = inNdefMessage.records
-                val ndefRecord0 = inNdefRecords[0]
-
-                val inMessage = String(ndefRecord0.payload)
-                return inMessage
+            else
+            {
+                var message = NFCUtil.retrieveNFCMessage(intent)
+                channel!!.invokeMethod("gotNfc",message)
             }
         }
-
-        return "please check your data type"
     }
 
 

@@ -12,6 +12,7 @@ import android.nfc.tech.Ndef
 import android.nfc.tech.NdefFormatable
 import java.io.IOException
 
+
 /**
  * Created by PJ Welcome on 2017/07/08 in NFCApp.
  */
@@ -29,24 +30,10 @@ object NFCUtil {
         return false
     }
 
-    fun createNFCMessage2(payload: String, intent: Intent?): Boolean {
-        //convert data
-        var msg:ByteArray  = payload.toByteArray(); //assign to your data
-        var domain = "com.sam0610" //usually your app's package name
-        var type = "externalType"
-        var extRecord:NdefRecord  = NdefRecord.createExternal(domain, type, msg)
 
-        //write to tag
-        val nfcMessage = NdefMessage(arrayOf(extRecord))
-        intent?.let {
-            val tag = it.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG)
-            return writeMessageToTag(nfcMessage, tag)
-        }
-        return false
-    }
     fun retrieveNFCMessage(intent: Intent?): String {
         intent?.let {
-            if (NfcAdapter.ACTION_NDEF_DISCOVERED == intent.action) {
+            if (NfcAdapter.ACTION_NDEF_DISCOVERED == intent.action || true) {
                 val nDefMessages = getNDefMessages(intent)
                 nDefMessages[0].records?.let {
                     it.forEach {
@@ -60,12 +47,11 @@ object NFCUtil {
                 }
 
             } else {
-                return "Touch NFC tag to read data"
+                return "Fail to read data"
             }
         }
-        return "Touch NFC tag to read data"
+        return "Fail to read data"
     }
-
 
     private fun getNDefMessages(intent: Intent): Array<NdefMessage> {
 
@@ -111,6 +97,7 @@ object NFCUtil {
                     return false
                 }
                 if (it.isWritable) {
+
                     it.writeNdefMessage(nfcMessage)
                     it.close()
                     //Message is written to tag
