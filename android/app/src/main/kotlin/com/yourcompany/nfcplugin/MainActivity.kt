@@ -14,26 +14,31 @@ class MainActivity(): FlutterActivity() {
   private val CHANNEL = "sam0610.nixon.io/nfc"
     private var mNfcAdapter: NfcAdapter? = null
     private var channel:MethodChannel? =null
+    private var writemode:Boolean = false
+    private var msgToWrite: String =""
 
   override fun onCreate(savedInstanceState: Bundle?) {
       super.onCreate(savedInstanceState)
       GeneratedPluginRegistrant.registerWith(this)
       mNfcAdapter = NfcAdapter.getDefaultAdapter(this)
       channel =MethodChannel(flutterView, CHANNEL)
-    //   channel!!.setMethodCallHandler { call, result ->
-    //   // TODO
-    //   if(call.method == "getBatteryLevel"){
-    //     //val msg = NFCUtil.retrieveNFCMessage(intent)
-    //     if (!message!!.isEmpty() ){
-    //       result.success(message)
 
-    //     }else{
-    //       result.error("NA","Error ",null)
-    //     }
-    //   }else{
-    //     result.notImplemented()
-    //   }
-    // }
+      channel!!.setMethodCallHandler { call, result ->
+
+          when (call.method) {
+              "writeMode" -> {
+                  writemode = true
+                  msgToWrite = call.arguments.toString()
+                  result.success("write mode on")
+              }
+              "readMode" -> {
+                  writemode = false
+                  result.success("read mode on")
+              }
+              else -> result.notImplemented()
+          }
+      }
+
   }
 
     override fun onResume() {
@@ -52,24 +57,36 @@ class MainActivity(): FlutterActivity() {
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
-        //val messageWrittenSuccessfully = NFCUtil.createNFCMessage("hi sam", intent)
         if(intent!=null){
-         //var message = NFCUtil.retrieveNFCMessage(intent)
+        if(writemode){
+            var message = ""
+            try{
+                if(NFCUtil.createNFCMessage2(msgToWrite, intent)) message="done"
+            }catch(e:Exception){
+                message= e.message.toString()
+            }
+            writemode=false
+            channel!!.invokeMethod("wroteNfc",message)
+        } else{
             var message = receiveMessageFromDevice(intent)
-        channel!!.invokeMethod("getNFC",message)
+            channel!!.invokeMethod("gotNfc",message)
+
+
+        }  
+        //var message = NFCUtil.retrieveNFCMessage(intent)
         }
     }
 
     private fun receiveMessageFromDevice(intent: Intent):String {
         val action = intent.action
-        if (NfcAdapter.ACTION_NDEF_DISCOVERED == action|| true) {
+        if (NfcAdapter.ACTION_NDEF_DISCOVERED == action || true) {
             val parcelables = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)
             with(parcelables) {
                 val inNdefMessage = this[0] as NdefMessage
                 val inNdefRecords = inNdefMessage.records
-                val ndefRecord_0 = inNdefRecords[0]
+                val ndefRecord0 = inNdefRecords[0]
 
-                val inMessage = String(ndefRecord_0.payload)
+                val inMessage = String(ndefRecord0.payload)
                 return inMessage
             }
         }

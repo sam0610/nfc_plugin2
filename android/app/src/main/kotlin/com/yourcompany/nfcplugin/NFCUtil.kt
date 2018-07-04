@@ -19,7 +19,7 @@ object NFCUtil {
 
     fun createNFCMessage(payload: String, intent: Intent?): Boolean {
 
-        val pathPrefix = "sam0610.com"
+        val pathPrefix = "com.sam0610"
         val nfcRecord = NdefRecord(NdefRecord.TNF_EXTERNAL_TYPE, pathPrefix.toByteArray(), ByteArray(0), payload.toByteArray())
         val nfcMessage = NdefMessage(arrayOf(nfcRecord))
         intent?.let {
@@ -29,6 +29,21 @@ object NFCUtil {
         return false
     }
 
+    fun createNFCMessage2(payload: String, intent: Intent?): Boolean {
+        //convert data
+        var msg:ByteArray  = payload.toByteArray(); //assign to your data
+        var domain = "com.sam0610" //usually your app's package name
+        var type = "externalType"
+        var extRecord:NdefRecord  = NdefRecord.createExternal(domain, type, msg)
+
+        //write to tag
+        val nfcMessage = NdefMessage(arrayOf(extRecord))
+        intent?.let {
+            val tag = it.getParcelableExtra<Tag>(NfcAdapter.EXTRA_TAG)
+            return writeMessageToTag(nfcMessage, tag)
+        }
+        return false
+    }
     fun retrieveNFCMessage(intent: Intent?): String {
         intent?.let {
             if (NfcAdapter.ACTION_NDEF_DISCOVERED == intent.action) {

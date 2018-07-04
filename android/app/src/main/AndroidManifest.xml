@@ -40,10 +40,10 @@
             <intent-filter>
                 <action android:name="android.nfc.action.NDEF_DISCOVERED"/>
                 <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="text/plain"
-                    android:host="sam0610.com"
-                    android:pathPrefix="/sam0610.com"
-                    android:scheme="nfc"/>
+                <data android:scheme="vnd.android.nfc"
+                android:host="ext"
+                android:pathPrefix="/com.sam0610:externalType"/>
+
             </intent-filter>
 
 

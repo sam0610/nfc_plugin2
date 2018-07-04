@@ -26,7 +26,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   static const platform = const MethodChannel('sam0610.nixon.io/nfc');
-  String _batteryLevel = 'unknow text';
+  TextEditingController _controller = new TextEditingController();
+  List<String> _message = [];
 
   @override
   void initState() {
@@ -35,10 +36,15 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<dynamic> myUtilsHandler(MethodCall methodCall) async {
-    if (methodCall.method == "getNFC") {
+    if (methodCall.method == "gotNfc") {
       String msg = methodCall.arguments;
       setState(() {
-        _batteryLevel = msg;
+        _message.add(msg);
+      });
+    } else if (methodCall.method == "wroteNfc") {
+      String msg = methodCall.arguments;
+      setState(() {
+        _message.add(msg);
       });
     }
   }
@@ -47,20 +53,53 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Material(
       child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Text(
-              _batteryLevel,
-              style: new TextStyle(
-                  fontSize: 48.0,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue),
-            )
-          ],
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              TextFormField(
+                controller: _controller,
+                decoration: new InputDecoration(labelText: "msg"),
+              ),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    flex: 1,
+                    child: new FlatButton.icon(
+                      label: new Text("write"),
+                      icon: new Icon(Icons.nfc),
+                      onPressed: _writeNfc,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 1,
+                    child: new FlatButton.icon(
+                      label: new Text("read"),
+                      icon: new Icon(Icons.nfc),
+                      onPressed: _readNfc,
+                    ),
+                  ),
+                ],
+              ),
+              new Expanded(
+                  child: new ListView.builder(
+                itemCount: _message.length,
+                itemBuilder: (ctx, index) => new Text(_message[index]),
+              ))
+            ],
+          ),
         ),
       ),
     );
-    // TODO: implement build
+  }
+
+  void _writeNfc() async {
+    String message = _controller.text;
+    await platform.invokeMethod('writeMode', message);
+  }
+
+  void _readNfc() async {
+    await platform.invokeMethod('readMode');
   }
 }
