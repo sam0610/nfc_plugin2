@@ -13,9 +13,11 @@ import Flutter
                                                    binaryMessenger: controller);
     batteryChannel.setMethodCallHandler({
         (call: FlutterMethodCall, result: FlutterResult) -> Void in
-        if ("getBatteryLevel" == call.method) {
+        if ("write" == call.method) {
             self.receiveBatteryLevel(result: result);
-        } else {
+        } else if("read" == call.method) {
+            result(FlutterMethodNotImplemented);
+        }else {
             result(FlutterMethodNotImplemented);
         }
     });

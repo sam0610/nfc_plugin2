@@ -85,7 +85,8 @@ class _MyHomePageState extends State<MyHomePage> {
               new Expanded(
                   child: new ListView.builder(
                 itemCount: _message.length,
-                itemBuilder: (ctx, index) => new Text(_message[index]),
+                itemBuilder: (ctx, index) => new Text(_message[index],
+                    style: new TextStyle(fontSize: 24.0, color: Colors.blue)),
               ))
             ],
           ),
@@ -96,10 +97,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _writeNfc() async {
     String message = _controller.text;
-    await platform.invokeMethod('writeMode', message);
+    await platform.invokeMethod('write', message);
   }
 
   void _readNfc() async {
-    await platform.invokeMethod('readMode');
+    await platform.invokeMethod('read');
   }
 }

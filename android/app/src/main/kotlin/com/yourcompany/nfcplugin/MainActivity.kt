@@ -13,7 +13,8 @@ class MainActivity(): FlutterActivity() {
   private val CHANNEL = "sam0610.nixon.io/nfc"
     private var mNfcAdapter: NfcAdapter? = null
     private var channel:MethodChannel? =null
-    private var writemode:Boolean = false
+    private var writeMode:Boolean = false
+    private var readMode:Boolean = false
     private var msgToWrite: String =""
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,16 +24,19 @@ class MainActivity(): FlutterActivity() {
       channel =MethodChannel(flutterView, CHANNEL)
 
       channel!!.setMethodCallHandler { call, result ->
-
           when (call.method) {
-              "writeMode" -> {
-                  writemode = true
-                  msgToWrite = call.arguments.toString()
-                  result.success("write mode on")
+              "write" -> {
+                    mNfcAdapter?.let {
+                        NFCUtil.enableNFCInForeground(it, this, javaClass)}
+                    writeMode = true
+                    msgToWrite = call.arguments.toString()
+                    result.success("Tap Card to write")
               }
-              "readMode" -> {
-                  writemode = false
-                  result.success("read mode on")
+              "read" -> {
+                    mNfcAdapter?.let {
+                        NFCUtil.enableNFCInForeground(it, this, javaClass)}
+                    readMode = true
+                    result.success("Tap Card to read")
               }
               else -> result.notImplemented()
           }
@@ -42,15 +46,19 @@ class MainActivity(): FlutterActivity() {
 
     override fun onResume() {
         super.onResume()
-        mNfcAdapter?.let {
-            NFCUtil.enableNFCInForeground(it, this, javaClass)
+        if(readMode || writeMode){
+            mNfcAdapter?.let {
+                NFCUtil.enableNFCInForeground(it, this, javaClass)
+            }
         }
     }
 
     override fun onPause() {
         super.onPause()
-        mNfcAdapter?.let {
-            NFCUtil.disableNFCInForeground(it, this)
+        if(readMode || writeMode){
+            mNfcAdapter?.let {
+                NFCUtil.disableNFCInForeground(it, this)
+            }
         }
     }
 
@@ -59,20 +67,23 @@ class MainActivity(): FlutterActivity() {
 
         if(intent!=null){
             var message = ""
-            if(writemode){
+            if(writeMode){
                 try{
-                    if(NFCUtil.createNFCMessage(msgToWrite,intent))message="done"
-                }
+                    if(NFCUtil.createNFCMessage(msgToWrite,intent)){
+                        message="write Nfc done"    
+                        channel!!.invokeMethod("wroteNfc",message)
+                        writeMode=false
+                    }
+                    }
                 catch(e:Exception){
                     message= e.message.toString()
                 }
-                writemode=false
-                channel!!.invokeMethod("wroteNfc",message)
-            }
-            else
+                }
+            else if(readMode)
             {
                 var message = NFCUtil.retrieveNFCMessage(intent)
                 channel!!.invokeMethod("gotNfc",message)
+                readMode = false
             }
         }
     }
